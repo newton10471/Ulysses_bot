@@ -22,7 +22,17 @@ end
 # command <input_file> 
 # - if <input_file> is .yml, load the model from that file and generate text based on it
 # - if <input_file> isn't .yml, assume it's a text file, build a model from it, save the model, and output generated text
-def parse_command_line
+def parse_command_line(args)
+  p "args.size is #{args.size}"
+  if args.size < 1 
+    puts "No input or model file specified. Exiting ..."
+    exit
+  elsif args.size > 1
+    puts "Too many options specified. Exiting..."
+    exit
+  else
+    return args[0]
+  end
 end
 
 def read_file(filename)
@@ -61,14 +71,23 @@ def pick_two_words(source_text_words, word_pairs_and_probabilities)
   return two_sample_words
 end
 
-filename = ARGV.first
 probabilities = {}
-new_text = []
-words = read_file(filename)
-probabilities = build_probabilities(words)
-serialize_model(probabilities,"my_model.yml")
-saved_model = deserialize_model("my_model.yml")
 
+# filename = ARGV.first
+filename = parse_command_line(ARGV)
+if /.yml/.match(filename)
+  # puts "found a .yml file"
+  # exit
+  probabilities = deserialize_model(filename)
+else
+  # puts "this isn't a .yml file"
+  # exit
+  words = read_file(filename)
+  probabilities = build_probabilities(words)
+  serialize_model(probabilities, filename + ".yml")
+end
+
+new_text = []
 current_two_words = pick_two_words(words, probabilities)
 
 #get the first following word
