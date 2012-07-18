@@ -1,3 +1,24 @@
+require 'yaml'
+
+# Relied heavily on this blog post for the following two functions:
+# http://www.skorks.com/2010/04/serializing-and-deserializing-objects-with-ruby/ 
+def serialize_model(model)
+  f = File.open("model.yaml", "w") 
+  f.puts YAML::dump(model)
+  f.close
+end
+
+def deserialize_model
+  deserialized_hash = {}
+  f = File.open("model.yaml", "r").each do |object| 
+    loaded_object = YAML::load(object)
+    p loaded_object
+    # deserialized_hash << YAML::load(object)
+  end
+  f.close
+  return deserialized_hash
+end
+
 def read_file(filename)
   file_text = []
   f = File.open(filename,"r")
@@ -39,6 +60,11 @@ probabilities = {}
 new_text = []
 words = read_file(filename)
 probabilities = build_probabilities(words)
+serialize_model(probabilities)
+saved_model = deserialize_model
+p saved_model
+exit
+
 current_two_words = pick_two_words(words, probabilities)
 
 #get the first following word
