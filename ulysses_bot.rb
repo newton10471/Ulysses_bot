@@ -64,9 +64,9 @@ probabilities.each do |dummy|
   else   
     new_text << probable_following_word                                 # tack the new word on the end of the new_text array
     new_first_word = current_two_words.split(" ")[1]                    # shift rightmost word of current_two_words to the left
-    p "new_first_word: #{new_first_word} probable_following_word: #{probable_following_word} dummy: #{dummy}"
+    # p "new_first_word: #{new_first_word} probable_following_word: #{probable_following_word} dummy: #{dummy}"
     current_two_words = new_first_word + " " + probable_following_word    # make the probable_following_word the new rightmost word of current_two_words
-    p "current_two_words is #{current_two_words}"
+    # p "current_two_words is #{current_two_words}"
   end
 end
 
