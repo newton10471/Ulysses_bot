@@ -27,7 +27,7 @@ def build_probabilities(source_text_words)
   return word_pairs_and_probabilities
 end
 
-def pick_first_two_words(source_text_words, word_pairs_and_probabilities)
+def pick_two_words(source_text_words, word_pairs_and_probabilities)
   # randomly pick the first two words, until we find a hit
   found = false
   while (found == false) do
@@ -41,9 +41,7 @@ def pick_first_two_words(source_text_words, word_pairs_and_probabilities)
 end
 
 probabilities = build_probabilities(words)
-# p probabilities
-# exit
-current_two_words = pick_first_two_words(words, probabilities)
+current_two_words = pick_two_words(words, probabilities)
 
 #get the first following word
 probable_following_word = probabilities[current_two_words]
@@ -58,16 +56,11 @@ probabilities.each do |dummy|
     if (try_following_word != nil)
       found = true                                          # if we find a match (a non-nil value), break out of while loop
       probable_following_word = try_following_word.sample
-      # if probable_following_word == nil                     # if it happens to be one of the last two words the probabilities hash
-      #   puts "PROBABLE FOLLOWING WORD IS NIL"
-      #   probable_following_word = words.sample              # then pick a random word as the probable_following_word
-      #   puts "PROBABLE FOLLOWING WORD IS #{probable_following_word}"
-      # end
     end  
   end
 
   if (probable_following_word == nil)
-    current_two_words = pick_first_two_words(words, probabilities)
+    current_two_words = pick_two_words(words, probabilities)
   else   
     new_text << probable_following_word                                 # tack the new word on the end of the new_text array
     new_first_word = current_two_words.split(" ")[1]                    # shift rightmost word of current_two_words to the left
