@@ -34,9 +34,10 @@ def pick_two_words(source_text_words, word_pairs_and_probabilities)
   return two_sample_words
 end
 
+filename = ARGV.first
 probabilities = {}
 new_text = []
-words = read_file("ulysses.txt")
+words = read_file(filename)
 probabilities = build_probabilities(words)
 current_two_words = pick_two_words(words, probabilities)
 
