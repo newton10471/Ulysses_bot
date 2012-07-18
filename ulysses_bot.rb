@@ -9,16 +9,73 @@ His pace slackened. Here. Am I going to aunt Sara's or not? My consubstantial fa
 EOF
 
 
-source_text_words = source_text.split(' ')
-word_pairs_and_probabilities = {}
-source_text_words.each_with_index do |word, index|
-  hash_key = "#{word} #{source_text_words[index + 1]}"
-  hash_value = source_text_words[index + 2]
-  if word_pairs_and_probabilities[hash_key] 
-    word_pairs_and_probabilities[hash_key] << hash_value
-  else
-    word_pairs_and_probabilities[hash_key] = [hash_value]
+words = source_text.split(' ')  # for now read this from the above-defined variable, but later on read from a file
+probabilities = {}
+new_text = []
+
+def build_probabilities(source_text_words)
+  word_pairs_and_probabilities = {}
+  source_text_words.each_with_index do |word, index|
+    hash_key = "#{word} #{source_text_words[index + 1]}"
+    hash_value = source_text_words[index + 2]
+    if word_pairs_and_probabilities[hash_key] 
+      word_pairs_and_probabilities[hash_key] << hash_value
+    else
+        word_pairs_and_probabilities[hash_key] = [hash_value]
+    end
+  end
+  return word_pairs_and_probabilities
+end
+
+def pick_first_two_words(source_text_words, word_pairs_and_probabilities)
+  # randomly pick the first two words, until we find a hit
+  found = false
+  while (found == false) do
+    two_sample_words = source_text_words.sample(2).join(" ")
+    if word_pairs_and_probabilities[two_sample_words] != nil
+      found = true
+    end
+  end
+  # return a single string containing the two words, suitable as a hash key
+  return two_sample_words
+end
+
+probabilities = build_probabilities(words)
+# p probabilities
+# exit
+current_two_words = pick_first_two_words(words, probabilities)
+
+#get the first following word
+probable_following_word = probabilities[current_two_words]
+# populate the new text with the first two new words
+new_text << current_two_words.split(" ")
+
+# for now, just spit out as much text as comes in
+probabilities.each do |dummy|
+  found = false
+  while (found == false) do
+    try_following_word = probabilities[current_two_words]   # find and pick a candidate following word
+    if (try_following_word != nil)
+      found = true                                          # if we find a match (a non-nil value), break out of while loop
+      probable_following_word = try_following_word.sample
+      # if probable_following_word == nil                     # if it happens to be one of the last two words the probabilities hash
+      #   puts "PROBABLE FOLLOWING WORD IS NIL"
+      #   probable_following_word = words.sample              # then pick a random word as the probable_following_word
+      #   puts "PROBABLE FOLLOWING WORD IS #{probable_following_word}"
+      # end
+    end  
+  end
+
+  if (probable_following_word == nil)
+    current_two_words = pick_first_two_words(words, probabilities)
+  else   
+    new_text << probable_following_word                                 # tack the new word on the end of the new_text array
+    new_first_word = current_two_words.split(" ")[1]                    # shift rightmost word of current_two_words to the left
+    p "new_first_word: #{new_first_word} probable_following_word: #{probable_following_word} dummy: #{dummy}"
+    current_two_words = new_first_word + " " + probable_following_word    # make the probable_following_word the new rightmost word of current_two_words
+    p "current_two_words is #{current_two_words}"
   end
 end
 
-puts word_pairs_and_probabilities
+puts new_text.join(" ")
+
