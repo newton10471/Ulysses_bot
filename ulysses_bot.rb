@@ -1,22 +1,28 @@
 require 'yaml'
 
-# Relied heavily on this blog post for the following two functions:
+# Relied heavily on these blog posts for the following two functions:
 # http://www.skorks.com/2010/04/serializing-and-deserializing-objects-with-ruby/ 
-def serialize_model(model)
-  f = File.open("model.yaml", "w") 
+# http://rhnh.net/2011/01/31/yaml-tutorial
+
+def serialize_model(model,filename)
+  f = File.open(filename, "w") 
   f.puts YAML::dump(model)
   f.close
 end
 
-def deserialize_model
+def deserialize_model(filename)
   deserialized_hash = {}
-  f = File.open("model.yaml", "r").each do |object| 
-    loaded_object = YAML::load(object)
-    p loaded_object
-    # deserialized_hash << YAML::load(object)
-  end
+  f = File.open(filename, "r")
+  deserialized_hash = YAML::load(f)
   f.close
   return deserialized_hash
+end
+
+# use the following options
+# command <input_file> 
+# - if <input_file> is .yml, load the model from that file and generate text based on it
+# - if <input_file> isn't .yml, assume it's a text file, build a model from it, save the model, and output generated text
+def parse_command_line
 end
 
 def read_file(filename)
@@ -60,10 +66,8 @@ probabilities = {}
 new_text = []
 words = read_file(filename)
 probabilities = build_probabilities(words)
-serialize_model(probabilities)
-saved_model = deserialize_model
-p saved_model
-exit
+serialize_model(probabilities,"my_model.yml")
+saved_model = deserialize_model("my_model.yml")
 
 current_two_words = pick_two_words(words, probabilities)
 
