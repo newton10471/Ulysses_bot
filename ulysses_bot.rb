@@ -1,119 +1,78 @@
-require 'yaml'
-
-# Relied heavily on these blog posts for the following two functions:
-# http://www.skorks.com/2010/04/serializing-and-deserializing-objects-with-ruby/ 
-# http://rhnh.net/2011/01/31/yaml-tutorial
-
-def serialize_model(model,filename)
-  f = File.open(filename, "w") 
-  f.puts YAML::dump(model)
-  f.close
-end
-
-def deserialize_model(filename)
-  deserialized_hash = {}
-  f = File.open(filename, "r")
-  deserialized_hash = YAML::load(f)
-  f.close
-  return deserialized_hash
-end
-
-# use the following options
-# command <input_file> 
-# - if <input_file> is .yml, load the model from that file and generate text based on it
-# - if <input_file> isn't .yml, assume it's a text file, build a model from it, save the model, and output generated text
-def parse_command_line(args)
-  p "args.size is #{args.size}"
-  if args.size < 1 
-    puts "No input or model file specified. Exiting ..."
-    exit
-  elsif args.size > 1
-    puts "Too many options specified. Exiting..."
-    exit
-  else
-    return args[0]
+class LitBot
+  def eat_file(file_name)
+    file = File.open(file_name)
+    @source_text = file.read
+    file.close
   end
-end
 
-def read_file(filename)
-  file_text = []
-  f = File.open(filename,"r")
-  f.each do |line|
-    file_text += line.split(" ")
+  def speak_first_10_words
+    puts @source_text.split(' ').first(10)
   end
-  return file_text
-end
 
-def build_probabilities(source_text_words)
-  word_pairs_and_probabilities = {}
-  source_text_words.each_with_index do |word, index|
-    hash_key = "#{word} #{source_text_words[index + 1]}"
-    hash_value = source_text_words[index + 2]
-    if word_pairs_and_probabilities[hash_key] 
-      word_pairs_and_probabilities[hash_key] << hash_value
-    else
+  def digest_file
+    source_text_words = @source_text.split(' ')
+    word_pairs_and_probabilities = {}
+
+    source_text_words.each_with_index do |word, index|
+      hash_key = "#{word} #{source_text_words[index + 1]}"
+      hash_value = source_text_words[index + 2]
+      if word_pairs_and_probabilities[hash_key]
+        word_pairs_and_probabilities[hash_key] << hash_value
+      else
         word_pairs_and_probabilities[hash_key] = [hash_value]
+      end
     end
   end
-  return word_pairs_and_probabilities
-end
 
-def pick_two_words(source_text_words, word_pairs_and_probabilities)
-  # randomly pick the first two words, until we find a hit
-  found = false
-  while (found == false) do
-    two_sample_words = source_text_words.sample(2).join(" ")
-    if word_pairs_and_probabilities[two_sample_words] != nil
-      found = true
-    end
-  end
-  # return a single string containing the two words, suitable as a hash key
-  return two_sample_words
-end
-
-probabilities = {}
-
-# filename = ARGV.first
-filename = parse_command_line(ARGV)
-if /.yml/.match(filename)
-  # puts "found a .yml file"
-  # exit
-  probabilities = deserialize_model(filename)
-else
-  # puts "this isn't a .yml file"
-  # exit
-  words = read_file(filename)
-  probabilities = build_probabilities(words)
-  serialize_model(probabilities, filename + ".yml")
-end
-
-new_text = []
-current_two_words = pick_two_words(words, probabilities)
-
-#get the first following word
-probable_following_word = probabilities[current_two_words]
-# populate the new text with the first two new words
-new_text << current_two_words.split(" ")
-
-# for now, just spit out as much text as comes in
-probabilities.each do |dummy|
-  found = false
-  while (found == false) do
-    try_following_word = probabilities[current_two_words]   # find and pick a candidate following word
-    if (try_following_word != nil)
-      found = true                                          # if we find a match (a non-nil value), break out of while loop
-      probable_following_word = try_following_word.sample
-    end  
-  end
-
-  if (probable_following_word == nil)
-    current_two_words = pick_two_words(words, probabilities)
-  else   
-    new_text << probable_following_word                                 # tack the new word on the end of the new_text array
-    new_first_word = current_two_words.split(" ")[1]                    # shift rightmost word of current_two_words to the left
-    current_two_words = new_first_word + " " + probable_following_word    # make the probable_following_word the new rightmost word of current_two_words
+  def speak
+    puts word_pairs_and_probabilities.first
   end
 end
 
-puts new_text.join(" ")
+bender = LitBot.new
+bender.eat_file("huckle.txt")
+# bender.speak_first_10_words # an example call
+bender.digest_file
+bender.speak
 
+ulysses_bot = LitBot.new
+ulysses_bot.eat_file("ulysses.txt")
+# ulysses.speak_first_10_words # an example call
+ulysses_bot.digest_file
+ulysses_bot.speak
+
+# BONUS HW
+hybrid_bot = ulysses_bot + bender
+hybrid_bot.speak
+
+# ulysses = File.open("ulysses.txt")
+# source_text = ulysses.read
+# ulysses.close
+
+# source_text_words = source_text.split(' ')
+# word_pairs_and_probabilities = {}
+
+# source_text_words.each_with_index do |word, index|
+  # hash_key = "#{word} #{source_text_words[index + 1]}"
+  # hash_value = source_text_words[index + 2]
+  # if word_pairs_and_probabilities[hash_key]
+    # word_pairs_and_probabilities[hash_key] << hash_value
+  # else
+    # word_pairs_and_probabilities[hash_key] = [hash_value]
+  # end
+# end
+
+# # puts word_pairs_and_probabilities
+# output_text = ['They', 'came']
+
+# story = 0
+# while story < 35 do
+  # word_pair = output_text.last(2).join(' ')
+  # next_word = word_pairs_and_probabilities[word_pair].sample unless word_pairs_and_probabilities[word_pair].nil?
+  # output_text << next_word
+
+  # if next_word && (next_word.include?(".") || next_word.include?("?"))
+    # story += 1
+  # end
+# end
+# puts output_text.join(' ')
